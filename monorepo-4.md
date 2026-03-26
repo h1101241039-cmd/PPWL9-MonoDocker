@@ -4,6 +4,7 @@ Proyek terakhir untuk mendapatkan deployment monorepo secara rapi:
    - Deploy terpisah: backend dan frontend project sendiri.
    - Koneksi ke github repo: Koneksi manual dari web vercel, tidak pakai Vercel CLI.
    - Vercel **Ignore Build Steps**: ketika hanya frotnend yang ada perubahan, backend tidak ikut ter build.
+   - Api Key untuk akses route di backend.
    - Fungsi berjalan sama seperti di development.
 2. Deploy database sqlite ke [turso](https://turso.tech/)
 
@@ -306,9 +307,14 @@ Sekarang kita akan deploy backend & frontend ke vercel (2 proyek terpisah).
     - **Command**: `git diff HEAD^ HEAD --quiet -- ./`
   - **Environment Variables**: `VITE_BACKEND_URL` (dari production vercel), `VITE_CHECK` (supaya vite.config.ts run), port tidak perlu.
 
+**🚨Pastikan** `VITE_BACKEND_URL` atau `FRONTEND_URL` tidak pakap postfix `/`, contoh: 
+ - Salah -> `https://monorepo.vercel.app/`
+ - Benar -> `https://monorepo.vercel.app`
+ - Khawait web salah membaca `${FRONTEND_URL}/user` -> bukannya https://monorepo.vercel.app/user, malah jadi https://monorepo.vercel.app//user
+
 Info:
 - Jika ada bagian config yang ter skip, deployment akan error. Tidak apa, periksa di `Settings` -> `Build and Deployment` atau `Deployment Variabels` untuk menyesuaikan settingan.
-- Jika ada perubahan settingan build atau env di vercel, bisanya akan muncul opsi untuk re-deploy agar perubahan terbaca. Jika tidak, lakukan perubahan kode di local, push ke github (otomatis trigger deploy).
+- Jika ada perubahan settingan build atau env di vercel, bisanya akan muncul opsi untuk re-deploy agar perubahan terbaca. Karena sudah setting Ignore Build Steps, jadi re deploy akan di tolak. Solusinya, lakukan perubahan kode di local, push ke github (otomatis trigger deploy).
 
 Test kedua web production, jika sudah keduanya aman, lakukan perubahan file `apps/backend/src/index.ts`, beri pesan commit `test perubahan di backend`, lalu push. Perhatikan halaman `Deployments` kedua project. Jika hanya backend yang ter deploy berarti settingan **Ignore Build Steps** berhasil.   
 ---
@@ -317,9 +323,10 @@ Test kedua web production, jika sudah keduanya aman, lakukan perubahan file `app
 Yang dikumpulkan:
 - Link Repo
 - Link URL Production (frontend & backend) yang punya postfix `*.vercel.app`
-- SS Beberapa Konfigurasi Penting:
+- ScreenShot (SS) Beberapa Konfigurasi Penting:
   - web Turso: Halaman `Edit Data`
   - Web Frontend production: Halama classroom yang menampilkan list kelas yang diambil dari API Google.
-  - Tampilan halaman `Deployments` yang berisi list commit deploy dari kedua project (Frontend & Backend).
+  - Vercel project: Halaman `Overview` yang meampilkan preview dan informasi status dari kedua proyek (Frontend & Backend).
+  - Vercel project: Halaman `Deployments` yang berisi list commit deploy dari kedua project (Frontend & Backend).
   
 SS nya full screen, terlihat waktu (supaya Asdos tau urutannya). Sisanya bisa Asdos cek sendiri.
