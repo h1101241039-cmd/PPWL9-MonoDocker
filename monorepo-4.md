@@ -239,7 +239,7 @@ apps\backend>bun start
 $ bun dist/index.mjs
 error: Cannot find module './generated/prisma/client' from 'C:\repo\ppwl\apps\backend\dist\index.mjs'
 ```
-Itu karena ada `import { Prisma } from "@prisma/client"` di dalam workspace backend, ganti path pakai yg `src/generated/prisma`. Ini adalah contoh berhasil build & test:
+Itu karena ada `import { Prisma } from "@prisma/client"` di dalam workspace backend, ganti path jadi from `src/generated/prisma`. Berikut contoh berhasil build & test:
 
 ```bash
 >cd apps/backend
