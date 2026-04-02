@@ -101,7 +101,7 @@ const adapter = new PrismaLibSql({ url: dbUrl, authToken: process.env.DB_AUTH_TO
 export const prisma = new PrismaClient({ adapter });
 ```
 
-### **apps/frontend/Dockerfile**
+### 1.4. **apps/frontend/Dockerfile**
 - Build menggunakan template dari `oven/bun:1`
 - Copy file project ke dalam lingkungan virtual dari Docker, lalu run script 
 - Run script instalasi, Build, & runtime khusus.
@@ -135,7 +135,7 @@ CMD sh -c "echo '🦊 Frontend → http://localhost:5173' && nginx -g 'daemon of
 EXPOSE 80
 ```
 
-### **apps/frontend/nginx.conf**
+### 1.5. **apps/frontend/nginx.conf**
 konfigurasi untuk runtime `nginx` 
 ```conf
 server {
