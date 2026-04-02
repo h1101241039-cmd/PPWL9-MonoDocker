@@ -49,7 +49,6 @@ services:
     build:
       context: .
       dockerfile: apps/frontend/Dockerfile
-      target: dev          # ← ganti ke `production` jika ingin run nginx static
     ports:
       - "5173:80"
     depends_on:
