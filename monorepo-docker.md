@@ -196,7 +196,10 @@ taskkill /F /PID 1234
 
 ## Final
 Kumpulkan:
-1. Link repo **`https://github.com/<username>/ppwl9-mono-docker`**
-2. Video yang menampilkan rekaman layar yang menampilkan test web & perlihatkan command laine hasil build nya (memastikan bahwa web yang terlihat adalah hasil build docker, bukan `bun dev` biasa). Test halaman root `/` (tampilkan tabel data) dan `/classroom` (grid data API Course) di web frontend.
+1. **Link**: repo **`https://github.com/<username>/ppwl9-mono-docker`**
+2. **rekaman layar**:
+    - menampilkan test web & perlihatkan command line hasil build docker nya, tutup terminal yang lain.
+    - Memastikan bahwa web yang terlihat adalah hasil build docker, bukan `bun dev` biasa.
+    - Test halaman root `/` (tampilkan tabel data) dan `/classroom` (grid data API Course) di web frontend.
 
 [Contoh Submisi Video](#) akan di update belakangan.
