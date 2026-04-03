@@ -25,6 +25,7 @@ Struktur file baru:
 ```
 monorepo/
 ├── docker-compose.yml    ← action untuk memanggil dockerfile
+├── .dockerignore         ← files yang tidak diperlukan saat build
 ├── apps/             
 │   ├── backend/
 │   │   ├── Dockerfile    ← Setup docker (dependency, file transfer, & script command)
@@ -49,8 +50,6 @@ services:
       dockerfile: apps/backend/Dockerfile
     ports:
       - "3000:3000"
-    volumes:
-      - db_data:/app/apps/backend/prisma
     restart: unless-stopped
 
   frontend:
@@ -67,10 +66,23 @@ volumes:
   db_data:
 ```
 
-### 1.2. **apps/backend/Dockerfile**
+### 1.2. **.dockerignore**
+File-file & folder yang di skip saat `Dockerfile` run `COPY`. Tidak diperlukan karena akan digenerate ulang di Docker.
+
+```bash
+node_modules
+**/node_modules
+**/dist
+dist
+**/build
+.git
+.bun-cache
+```
+
+### 1.3. **apps/backend/Dockerfile**
 - Build menggunakan template dari `oven/bun:1`
 - Copy file project ke dalam lingkungan virtual dari Docker, lalu run script 
-- Run script instalasi, Genereate, & runtime (sekarang masih dari src/, anda bisa edit dengan run build dulu lalu pakai dist/)
+- Run script instalasi, Genereate, & runtime (sekarang pakai runtime server bun ke src/, anda bisa edit dengan run build dulu lalu pakai dist/)
 
 ```Dockerfile
 FROM oven/bun:1 AS base
@@ -96,7 +108,7 @@ EXPOSE 3000
 CMD ["bun", "run", "src/index.ts"]
 ```
 
-### 1.3. **apps/backend/prisma/db.ts**
+### 1.4. **apps/backend/prisma/db.ts**
 Modifikasi path file database agar realatif dengan file kode, jika tidak didefinisi di env.
 ```ts
 import { PrismaClient } from "../src/generated/prisma/client";
@@ -109,7 +121,7 @@ const adapter = new PrismaLibSql({ url: dbUrl, authToken: process.env.DB_AUTH_TO
 export const prisma = new PrismaClient({ adapter });
 ```
 
-### 1.4. **apps/frontend/Dockerfile**
+### 1.5. **apps/frontend/Dockerfile**
 - Build menggunakan template dari `oven/bun:1`
 - Copy file project ke dalam lingkungan virtual dari Docker, lalu run script 
 - Run script instalasi, Build, & runtime khusus.
@@ -143,7 +155,7 @@ CMD sh -c "echo '🦊 Frontend → http://localhost:5173' && nginx -g 'daemon of
 EXPOSE 80
 ```
 
-### 1.5. **apps/frontend/nginx.conf**
+### 1.6. **apps/frontend/nginx.conf**
 konfigurasi untuk runtime `nginx` 
 ```conf
 server {
@@ -194,17 +206,37 @@ docker compose build
 ## Paksa Docker Build Menggunakan Network Host
 docker compose build --build-arg BUILDKIT_INLINE_CACHE=1
 
-# jalankan image yang aktif
+# jalankan container berisi image yang di-build
 docker compose up
+# tekan 'd' untuk detached (docker container masih run di background)
+
+# untuk menutup container & membersihkan network
+docker compose down
 
 # ---- Build Cache not changed -> do "Hard Reset"
-# Jika dapat error ketika compose up, lalu kamu buat perubahan tapi ketika `compose up` kode tidak berubah, coba build tanpa cache (tambahkan --build-arg <detail_arg> jika error Integrity check failed), tapi harusnya docker sudah atasi otomatis jika pernah berhasil build.
+# Jika dapat error ketika compose up, lalu kamu buat perubahan tapi ketika `compose up` kode tidak berubah, coba build tanpa cache.
 docker compose build --no-cache
-# jalankan ulang container
-docker compose up -d
+# tambahkan --build-arg <detail_arg> jika error Integrity check failed (asdos check berhasil build di 98.0s)
+docker compose build --no-cache --build-arg BUILDKIT_INLINE_CACHE=1
+# untuk lebih cepat, bisa build service yang error saja (cth: `backend`, nama di docker-compose.yml)
+docker compose build --no-cache backend --build-arg BUILDKIT_INLINE_CACHE=1
+
+# -> jalankan ulang container
+docker compose up
+
+# Jika masih error kode yang tidak berubah, Jalankan pembersihan "nuklir" 
+## 1. Matikan kontainer
+docker compose down
+## 2. Hapus cache build secara total (Sangat Penting!)
+docker builder prune -a -f
+## 3. Bangun ulang tanpa cache sama sekali (asumsi jika error perubahan kode di `backend`)
+docker compose build --no-cache backend
+## 4. Jalankan
+docker compose up backend
 
 # --- Port Used in Docker -> do "stop docker process that used the port"
-# jika dapat error port is already allocated, run ini untuk stop all docker process
+# jika dapat error port is already allocated
+# run ini untuk stop all docker process dari `compose up`
 docker ps -q | xargs docker stop
 
 # cek jika ada port yang running
@@ -232,4 +264,4 @@ Kumpulkan:
     - Memastikan bahwa web yang terlihat adalah hasil build docker, bukan `bun dev` biasa.
     - Test halaman root `/` (tampilkan tabel data) dan `/classroom` (grid data API Course) di web frontend.
 
-[Contoh Submisi Video](#) akan di update belakangan.
+[Contoh Submisi Video](https://drive.google.com/file/d/1uBXGJSdh-ot5CfT8rrcAzjkXIFfsh4EL/view?usp=drive_link) akan di update belakangan.
