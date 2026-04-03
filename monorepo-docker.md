@@ -12,7 +12,15 @@ Referensi yang berharga untuk mulai belajar docker:
 - **Install Docker CLI**: disarankan pakai Docker CLI tanpa Docker Desktop agar lebih ringan, tapi jika sudah install Docker Desktop tidak apa-apa karena sudah include Docker CLI. 
     - Bagi pengguna windows yang bermasalah penyimpanan dan ingin setup Docker yang ringan, bisa [install WSL](https://learn.microsoft.com/en-us/windows/wsl/install) (disarankan pakai distro Debian karena paling ringan), lalu di dalam WSL bisa [install Docker CLI](https://docs.docker.com/engine/install/) (Docker Engine).
 
-## 1. Setup File
+## 1. Setup Project
+Bagi pengguna WSL, disarankan copy project di path `mnt/c/` ke path `~` (home) di linux:
+```bash
+# Performa I/O di folder ~ (home) bisa 10x hingga 100x lebih cepat daripada di /mnt/c/
+cp -r /mnt/c/<path>/mono-docker ~/mono-docker
+cd ~/mono-docker
+code .
+```
+
 Struktur file baru:
 ```
 monorepo/
@@ -160,19 +168,42 @@ server {
 
 ## 2. CLI
 ```bash
-# Jika pakai window wsl, hapus file bun.lock, lalu jalankan `bun install --lockfile-only` di WSL (menghasilkan file bun.lock). supaya path di file lock pakai forward slash "/", bukan backslash "\".
+# di wsl, untuk mengecek jaringan aman, jalankan: (jika pakai debian/ubuntu)
+sudo apt update
+# jika ada indikasi masalah IPv6 (Network is unreachable), kita paksa apt hanya menggunakan IPv4:
+sudo apt update -o Acquire::ForceIPv4=true
+# | Get:18 http://deb.debian.org/debian-security trixie-security/non-free-firmware .. [352 B]
+# | Fetched 16.9 MB in 3s (5,250 kB/s)
+# | All packages are up to date.
+# Jika dapat speed 5,250 kB/s tandanya sudah stabil
 
-# test dulu development
+# Hapus sisa installasi dari windows path
+# Hapus node_modules secara rekursif
+find . -name "node_modules" -type d -prune -exec rm -rf '{}' +
+
+# Hapus file lock Bun
+rm -f bun.lock
+
+# install & test dulu development
+bun install
 bun dev
 
-# jika dev berhasil, sekarang test Build & Start
+# jika dev berhasil, sekarang Build image nya
 docker compose build
+## Jika build terkena Integrity check failed (karena docker pakai virtual network-nya sendiri),
+## Paksa Docker Build Menggunakan Network Host
+docker compose build --build-arg BUILDKIT_INLINE_CACHE=1
+
+# jalankan image yang aktif
 docker compose up
 
-# ----
-# Jika dapat error, lalu kamu buat perubahan tapi ketika `compose up` kode tidak berubah, coba build tanpa cache
+# ---- Build Cache not changed -> do "Hard Reset"
+# Jika dapat error ketika compose up, lalu kamu buat perubahan tapi ketika `compose up` kode tidak berubah, coba build tanpa cache (tambahkan --build-arg <detail_arg> jika error Integrity check failed), tapi harusnya docker sudah atasi otomatis jika pernah berhasil build.
 docker compose build --no-cache
+# jalankan ulang container
+docker compose up -d
 
+# --- Port Used in Docker -> do "stop docker process that used the port"
 # jika dapat error port is already allocated, run ini untuk stop all docker process
 docker ps -q | xargs docker stop
 
@@ -182,7 +213,7 @@ docker ps --format "table {{.Names}}\t{{.Ports}}"
 
 ### Fix error `bun dev`
 
-Jika dapat error `Port 5173 is already in use` walau sudah pakai `kill-port`, cukup ganti port nya jadi `5174`, dst. Atau pakai Powershell (run as administrator):
+Jika dapat error `Port 5173 is already in use` walau sudah pakai `kill-port`, cukup ganti port nya jadi `5174`, dan sebaliknya. Atau pakai Powershell (run as administrator):
 ```bash
 # lihat siapa yang memakai port 5173: 
 netstat -ano | findstr :5173
