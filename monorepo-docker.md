@@ -23,7 +23,7 @@ code .
 
 Struktur file baru:
 ```
-monorepo/
+mono-docker/
 ├── docker-compose.yml    ← action untuk memanggil dockerfile
 ├── .dockerignore         ← files yang tidak diperlukan saat build
 ├── apps/             
