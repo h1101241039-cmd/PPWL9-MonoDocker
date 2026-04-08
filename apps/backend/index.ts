@@ -2,7 +2,7 @@ import { Elysia } from "elysia";
 import { cors } from "@elysiajs/cors";
 import { swagger } from "@elysiajs/swagger";
 import { cookie } from "@elysiajs/cookie";
-import { prisma } from "../prisma/db";
+import { prisma } from "./prisma/db";
 import { createOAuthClient, getAuthUrl } from "./src/auth";
 import { getCourses, getCourseWorks, getSubmissions } from "./src/classroom";
 import type { ApiResponse, HealthCheck, User } from "shared";
